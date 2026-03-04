@@ -4,9 +4,9 @@ An interactive atomic simulation built using SFML 3.0.3.
 You can construct elements by firing protons, neutrons, and electrons at a nucleus and observe how atomic structure changes in real time.
 
 **Controls:**
-P	 - Fire a Proton
-N	 - Fire a Neutron
-E	 - Fire an Electron
+P - Fire a Proton
+N - Fire a Neutron
+E - Fire an Electron
 
 Particles collide with the nucleus and modify the atom accordingly.
 
@@ -69,15 +69,12 @@ Adjust include and library paths for your platform.
 
 **Project Structure:**
 AtomicSandbox/
-│
-├── src/
-│   ├── main.cpp
-│   └── pfont.ttf
-│
-├── bin/
-│   └── main
-│
-└── makefile
+|---- src/
+|      |---main.cpp
+|      |---pfont.ttf
+|--- bin/
+|     |---main
+|---- makefile
 
 **Technical Overview:**
 **Atom Class:**
