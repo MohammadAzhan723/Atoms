@@ -69,11 +69,17 @@ Adjust include and library paths for your platform.
 
 **Project Structure:**
 AtomicSandbox/
+
 |---- src/
+
 |      |---main.cpp
+
 |      |---pfont.ttf
+
 |--- bin/
+
 |     |---main
+
 |---- makefile
 
 **Technical Overview:**
