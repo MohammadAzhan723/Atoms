@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 #include <string>
 #include <cmath>
+#include <sstream>
 
 using namespace sf;
 using namespace std;
@@ -139,21 +141,17 @@ const vector<ElementData> PeriodicTable = {
 };
 //Bread and Butter
 class Atom{
+public:
     int protons;
     int neutrons;
     int electrons;
     Vector2f center;
 
-    static Font& getFont(){
-        static Font font;
-        static bool loaded = false;
-        if(!loaded){
-            if(!font.openFromFile("src/pfont.ttf")){
-            }
-            loaded = true;
-        }
-        return font;
-    }
+    int getProtons() const { return protons; }
+    int getNeutrons() const { return neutrons; }
+    int getElectrons() const { return electrons; }
+    int getCharge() const { return protons - electrons; }
+
     CircleShape nucleus;
     CircleShape orbit;
     CircleShape stabilityRing;
@@ -178,7 +176,8 @@ class Atom{
             {80.0, 2},
             {130.0, 8},
             {180.0, 18},
-            {230.0, 32}
+            {230.0, 32},
+            {280.0, 64}
     };
 
     vector<CircleShape> electron;
@@ -217,6 +216,33 @@ class Atom{
         }
     }
     }
+    float getStabilityScore() const{
+            if(protons == 0){
+                return 0.0;
+            } 
+            float idealRatio;
+            if(protons <= 20){
+                idealRatio = 1.0;
+            } else{
+                idealRatio = 1.5;
+            }
+            float actualRatio = (float)neutrons / protons;
+
+            float ratio = abs(actualRatio - idealRatio);
+
+            float ratioScore = 100.0 - (ratio * 100);
+
+            if(ratioScore < 0.0){
+                ratioScore = 0.0;
+            }
+            float heavyPenalty = protons * 0.5;
+
+            float finalScore = ratioScore - heavyPenalty;
+            if(finalScore < 0.0){
+                finalScore = 0;
+            }
+            return finalScore;
+    }
 
     //Helper function to get element data by proton number
     static ElementData getElementByProtons(int protonNumber) {
@@ -234,7 +260,7 @@ class Atom{
     int massNumber = protons + neutrons;
 
     nameLabel.setString(
-        data.name + "-" + std::to_string(massNumber) +
+        data.name + "-" + to_string(massNumber) +
         " (" + data.symbol + ")"
     );
 
@@ -259,7 +285,7 @@ class Atom{
     electron.clear();
     int remaining = electrons;
     for (const auto& shell : shellConfigs) {
-            int inThisShell = std::min(remaining, shell.maxCap);
+            int inThisShell = min(remaining, shell.maxCap);
             for (int i = 0; i < inThisShell; i++) {
                 CircleShape e(4.5f);
                 e.setFillColor(Color::Yellow);
@@ -272,37 +298,45 @@ class Atom{
             }
     }
     nucleus.setFillColor(data.color);
-
-    // Recenter text
-    sf::Rect<float> bounds = nameLabel.getLocalBounds();
+    
+    Rect<float> bounds = nameLabel.getLocalBounds();
     nameLabel.setOrigin({
         bounds.position.x + bounds.size.x / 2.0f,
         bounds.position.y + bounds.size.y / 2.0f
     });
 }
-public:
+    static Font& getFont(){
+        static Font font;
+        static bool loaded = false;
+        if(!loaded){
+            if(!font.openFromFile("src/pfont.ttf")){
+            }
+            loaded = true;
+        }
+        return font;
+    }
     Atom(int p, int n, int e, Vector2f ctr)
         : protons(p), neutrons(n), electrons(e), center(ctr),nameLabel(getFont())
     {
-        nucleus.setRadius(30.f);
-        nucleus.setOrigin({30.f, 30.f});
+        nucleus.setRadius(30.0);
+        nucleus.setOrigin({30.0, 30.0});
         nucleus.setPosition(center);
 
-        orbit.setRadius(120.f);
-        orbit.setOrigin({120.f, 120.f});
+        orbit.setRadius(120.0);
+        orbit.setOrigin({120.0, 120.0});
         orbit.setPosition(center);
         orbit.setFillColor(Color::Transparent);
         orbit.setOutlineThickness(1.5f);
         orbit.setOutlineColor(Color(100, 100, 100, 150));
 
         nameLabel.setFillColor(Color::White);
-        nameLabel.setPosition({center.x, 50.f});
+        nameLabel.setPosition({center.x, 50.0});
 
-        stabilityRing.setRadius(40.f);
-        stabilityRing.setOrigin({40.f, 40.f});
+        stabilityRing.setRadius(40.0);
+        stabilityRing.setOrigin({40.0, 40.0});
         stabilityRing.setPosition(center);
-        stabilityRing.setFillColor(sf::Color::Transparent);
-        stabilityRing.setOutlineThickness(4.f);
+        stabilityRing.setFillColor(Color::Transparent);
+        stabilityRing.setOutlineThickness(4.0);
 
         refresh();
     }
@@ -343,13 +377,12 @@ public:
             }
         }
 
-        // Fade out
-        float alpha = max(0.f, ejected[i].life);
+        float alpha = max(0.0f, ejected[i].life);
         Color c = ejected[i].eject.getFillColor();
         c.a = static_cast<uint8_t>(255 * alpha);
         ejected[i].eject.setFillColor(c);
 
-        if (ejected[i].life <= 0.f) {
+        if (ejected[i].life <= 0.0) {
             ejected.erase(ejected.begin() + i);
         } else {
             ++i;
@@ -403,7 +436,7 @@ public:
             Vector2f dir = position - center;
 
             float distSq = dir.x * dir.x + dir.y * dir.y;
-            distSq = max(distSq, 100.f);
+            distSq = max(distSq, 100.0f);
 
             float magForce = electronRepel / distSq;
 
@@ -489,11 +522,58 @@ public:
 int main() {
     RenderWindow window(VideoMode({800, 600}), "Atomic Sandbox");
     window.setFramerateLimit(120);
-    Vector2f center(400.0f, 300.0f);
+    Vector2f center(400.0, 300.0);
 
-    Atom a1(1, 0, 1, center);
+    Atom a1(0, 0, 0, center);
     vector<Projectile> projectiles;
     Clock clock;
+    Music theme;
+    RectangleShape infoPanel;
+    SoundBuffer bloopPBuffer;
+    SoundBuffer bloopNBuffer;
+    SoundBuffer bloopEBuffer;
+    Text infoText(Atom::getFont());
+
+    infoPanel.setSize({200.0, 170.0});
+    infoPanel.setPosition({560.0, 400.0});
+    infoPanel.setFillColor(Color(20, 20, 30));
+    infoPanel.setOutlineThickness(2.0);
+    infoPanel.setOutlineColor(Color(80,80,80));
+
+    infoText.setFont(Atom::getFont());
+    infoText.setCharacterSize(10);
+    infoText.setLineSpacing(2.0);
+    infoText.setFillColor(Color::White);
+    infoText.setPosition({570.0, 410.0});
+
+    if(!bloopPBuffer.loadFromFile("src/Basso.aiff")){
+        return false;
+    }
+    Sound bloopPSound(bloopPBuffer);
+    bloopPSound.setBuffer(bloopPBuffer);
+    bloopPSound.setVolume(20.0);
+
+    if(!bloopNBuffer.loadFromFile("src/Blow.aiff")){
+        return false;
+    }
+    Sound bloopNSound(bloopNBuffer);
+    bloopNSound.setBuffer(bloopNBuffer);
+    bloopNSound.setVolume(20.0);
+
+    if(!bloopEBuffer.loadFromFile("src/Bottle.aiff")){
+        return false;
+    }
+    Sound bloopESound(bloopEBuffer);
+    bloopESound.setBuffer(bloopEBuffer);
+    bloopESound.setVolume(20.0);
+    
+
+    if(!theme.openFromFile("src/atoms.wav")){
+        return false;
+    }
+    theme.setLooping(true);
+    theme.setVolume(40.0);
+    theme.play();
 
     while (window.isOpen()) {
         while (const auto event = window.pollEvent()) {
@@ -501,16 +581,18 @@ int main() {
                 window.close();
             }
 
-            // SFML 3.0 Event handling
             if (const auto* keyPressed = event->getIf<Event::KeyPressed>()) {
                 if (keyPressed->code == Keyboard::Key::P) {
-                    projectiles.emplace_back(Vector2f(0.f, 300.f), center, Projectile::PROTON);
+                    projectiles.emplace_back(Vector2f(0.0, 300.0), center, Projectile::PROTON);
+                    bloopPSound.play();
                 }
                 if (keyPressed->code == Keyboard::Key::N) {
-                    projectiles.emplace_back(Vector2f(800.f, 300.f), center, Projectile::NEUTRON);
+                    projectiles.emplace_back(Vector2f(800.0, 300.0), center, Projectile::NEUTRON);
+                    bloopNSound.play();
                 }
                 if (keyPressed->code == Keyboard::Key::E) {
-                    projectiles.emplace_back(Vector2f(800.f, 300.f), center, Projectile::ELECTRON);
+                    projectiles.emplace_back(Vector2f(800.0, 300.0), center, Projectile::ELECTRON);
+                    bloopESound.play();
                 }
             }
         }
@@ -518,6 +600,22 @@ int main() {
         float dt = clock.restart().asSeconds();
         static float totalTime = 0;
         totalTime += dt; 
+        stringstream ss;
+        int index = min(a1.protons, (int)PeriodicTable.size() - 1);
+        ElementData element = PeriodicTable[index];
+
+        infoText.setString(ss.str());
+
+        ss << "Element: " << element.name << "\n";
+        ss << "Symbol: " << element.symbol << "\n";
+        ss << "Atomic #: " << a1.getProtons() << "\n";
+        ss << "Mass #: " << (a1.getProtons() + a1.getNeutrons()) << "\n";
+        ss << "Neutrons: " << a1.getNeutrons() << "\n";
+        ss << "Electrons: " << a1.getElectrons() << "\n";
+        ss << "Charge: " << a1.getCharge() << "\n";
+        ss << "Stability: " << a1.getStabilityScore() << "\n";
+
+        infoText.setString(ss.str());
 
         for (int i = 0; i < projectiles.size(); ) {
             if (projectiles[i].getType() == Projectile::ELECTRON) {
@@ -537,7 +635,6 @@ int main() {
             float dy = projectiles[i].getPosition().y - center.y;
             float dist = sqrt(dx * dx + dy * dy);
 
-            // Collision check (30.0f matches your nucleus radius)
             if (dist < 30.0f) {
                 if (projectiles[i].getType() == Projectile::PROTON) a1.addProton();
                 if (projectiles[i].getType() == Projectile::NEUTRON) a1.addNeutron();
@@ -551,6 +648,8 @@ int main() {
         a1.updateEjected(dt);
         window.clear(Color(10, 10, 25));
         a1.draw(window);
+        window.draw(infoPanel);
+        window.draw(infoText);
         for (auto& p : projectiles) p.draw(window);
         window.display();
     }
