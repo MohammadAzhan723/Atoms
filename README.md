@@ -113,6 +113,14 @@ AtomicSandbox/
 
 |      |---pfont.ttf
 
+|      |---atoms.wave
+
+|      |---basso.aiff
+
+|      |---blow.aiff
+
+|      |---bottle.aiff
+
 |--- bin/
 
 |     |---main
