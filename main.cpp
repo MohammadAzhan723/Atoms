@@ -2,8 +2,6 @@
 #include <vector>
 #include <string>
 #include <cmath>
-#include <set>
-#include <algorithm>
 
 using namespace sf;
 using namespace std;
@@ -15,52 +13,129 @@ struct ElementData{
     string symbol;
     string type;
     Color color;
- 
 };
-
-struct UnlockPopup{
-    Text text;
-    float life;
-    Vector2f position;
-     UnlockPopup(const sf::Font& font)
-        : text(font), life(0), position(0, 0)
-    {
-    }
-};
-
-set<int> discoveredElements;
-vector<UnlockPopup> unlockPopups;
 
 //Periodic Table
 const vector<ElementData> PeriodicTable = {
-    {0, "Unknown", "n", "Unknown", Color(128, 128, 128)},
-    {1, "Hydrogen", "H", "Elementary",Color::Blue},
-    {2, "Helium", "He", "Noble-Gas",Color::Magenta},
-    {3, "Lithium", "Li", "Alkali",Color::Yellow},
-    {4, "Beryllium", "Be", "Alkaline",Color(255, 165, 0)},
-    {5, "Boron", "B", "Metalloid",Color(112, 128, 144)},
-    {6, "Carbon", "C", "Non-Metal",Color::Red},
-    {7, "Nitrogen", "N", "Non-Metal",Color::Red},
-    {8, "Oxygen", "O", "Non-Metal",Color::Red},
-    {9, "Flourine", "F", "Halogen",Color::Green},
-    {10, "Neon", "Ne", "Noble-Gas",Color::Magenta},
-    {11, "Sodium", "Na", "Alkali",Color::Yellow},
-    {12, "Magnesium", "Mg", "Alkaline",Color(255, 165, 0)},
-    {13, "Aluminium", "Al", "Other",Color(71, 74, 81)},
-    {14, "Silicon", "Si", "Non-Metal",Color::Red},
-    {15, "Phosphorus", "P", "Non-Metal",Color::Red},
-    {16, "Sulfur", "S", "Non-Metal",Color::Red},
-    {17, "Chlorine", "Cl", "Halogen",Color::Green},
-    {18, "Argon", "Ar", "Noble-Gas",Color::Magenta},
-    {19, "Potassium", "K", "Alkali",Color::Yellow},
-    {20, "Calcium", "Ca", "Alkaline",Color(255, 165, 0)},
-    {26, "Iron", "Fe", "Transition",Color::Cyan},
-    {29, "Copper", "Cu", "Transition",Color::Cyan},
-    {47, "Silver", "Ag", "Transition",Color::Cyan},
-    {79, "Gold", "Au", "Transition",Color(255, 215, 0)},
-    {82, "Lead", "Pb", "Other",Color(71, 74, 81)},
-    {92, "Uranium", "U",  "Actinide",Color(0, 255, 0)},
-    {94, "Plutonium", "Pu", "Actinide",Color(50, 200, 50)}
+    {0, "Unknown", "n", "Unknown", Color(128,128,128)},
+    {1, "Hydrogen", "H", "Non-Metal", Color::Red},
+    {2, "Helium", "He", "Noble-Gas", Color::Magenta},
+    {3, "Lithium", "Li", "Alkali", Color::Yellow},
+    {4, "Beryllium", "Be", "Alkaline", Color(255,165,0)},
+    {5, "Boron", "B", "Metalloid", Color(112,128,144)},
+    {6, "Carbon", "C", "Non-Metal", Color::Red},
+    {7, "Nitrogen", "N", "Non-Metal", Color::Red},
+    {8, "Oxygen", "O", "Non-Metal", Color::Red},
+    {9, "Fluorine", "F", "Halogen", Color::Green},
+    {10, "Neon", "Ne", "Noble-Gas", Color::Magenta},
+    {11, "Sodium", "Na", "Alkali", Color::Yellow},
+    {12, "Magnesium", "Mg", "Alkaline", Color(255,165,0)},
+    {13, "Aluminium", "Al", "Other", Color(71,74,81)},
+    {14, "Silicon", "Si", "Metalloid", Color(112,128,144)},
+    {15, "Phosphorus", "P", "Non-Metal", Color::Red},
+    {16, "Sulfur", "S", "Non-Metal", Color::Red},
+    {17, "Chlorine", "Cl", "Halogen", Color::Green},
+    {18, "Argon", "Ar", "Noble-Gas", Color::Magenta},
+    {19, "Potassium", "K", "Alkali", Color::Yellow},
+    {20, "Calcium", "Ca", "Alkaline", Color(255,165,0)},
+    {21, "Scandium", "Sc", "Transition", Color::Cyan},
+    {22, "Titanium", "Ti", "Transition", Color::Cyan},
+    {23, "Vanadium", "V", "Transition", Color::Cyan},
+    {24, "Chromium", "Cr", "Transition", Color::Cyan},
+    {25, "Manganese", "Mn", "Transition", Color::Cyan},
+    {26, "Iron", "Fe", "Transition", Color::Cyan},
+    {27, "Cobalt", "Co", "Transition", Color::Cyan},
+    {28, "Nickel", "Ni", "Transition", Color::Cyan},
+    {29, "Copper", "Cu", "Transition", Color::Cyan},
+    {30, "Zinc", "Zn", "Transition", Color::Cyan},
+    {31, "Gallium", "Ga", "Other", Color(71,74,81)},
+    {32, "Germanium", "Ge", "Metalloid", Color(112,128,144)},
+    {33, "Arsenic", "As", "Metalloid", Color(112,128,144)},
+    {34, "Selenium", "Se", "Non-Metal", Color::Red},
+    {35, "Bromine", "Br", "Halogen", Color::Green},
+    {36, "Krypton", "Kr", "Noble-Gas", Color::Magenta},
+    {37, "Rubidium", "Rb", "Alkali", Color::Yellow},
+    {38, "Strontium", "Sr", "Alkaline", Color(255,165,0)},
+    {39, "Yttrium", "Y", "Transition", Color::Cyan},
+    {40, "Zirconium", "Zr", "Transition", Color::Cyan},
+    {41, "Niobium", "Nb", "Transition", Color::Cyan},
+    {42, "Molybdenum", "Mo", "Transition", Color::Cyan},
+    {43, "Technetium", "Tc", "Transition", Color::Cyan},
+    {44, "Ruthenium", "Ru", "Transition", Color::Cyan},
+    {45, "Rhodium", "Rh", "Transition", Color::Cyan},
+    {46, "Palladium", "Pd", "Transition", Color::Cyan},
+    {47, "Silver", "Ag", "Transition", Color::Cyan},
+    {48, "Cadmium", "Cd", "Transition", Color::Cyan},
+    {49, "Indium", "In", "Other", Color(71,74,81)},
+    {50, "Tin", "Sn", "Other", Color(71,74,81)},
+    {51, "Antimony", "Sb", "Metalloid", Color(112,128,144)},
+    {52, "Tellurium", "Te", "Metalloid", Color(112,128,144)},
+    {53, "Iodine", "I", "Halogen", Color::Green},
+    {54, "Xenon", "Xe", "Noble-Gas", Color::Magenta},
+    {55, "Cesium", "Cs", "Alkali", Color::Yellow},
+    {56, "Barium", "Ba", "Alkaline", Color(255,165,0)},
+    {57, "Lanthanum", "La", "Lanthanide", Color(0,200,150)},
+    {58, "Cerium", "Ce", "Lanthanide", Color(0,200,150)},
+    {59, "Praseodymium", "Pr", "Lanthanide", Color(0,200,150)},
+    {60, "Neodymium", "Nd", "Lanthanide", Color(0,200,150)},
+    {61, "Promethium", "Pm", "Lanthanide", Color(0,200,150)},
+    {62, "Samarium", "Sm", "Lanthanide", Color(0,200,150)},
+    {63, "Europium", "Eu", "Lanthanide", Color(0,200,150)},
+    {64, "Gadolinium", "Gd", "Lanthanide", Color(0,200,150)},
+    {65, "Terbium", "Tb", "Lanthanide", Color(0,200,150)},
+    {66, "Dysprosium", "Dy", "Lanthanide", Color(0,200,150)},
+    {67, "Holmium", "Ho", "Lanthanide", Color(0,200,150)},
+    {68, "Erbium", "Er", "Lanthanide", Color(0,200,150)},
+    {69, "Thulium", "Tm", "Lanthanide", Color(0,200,150)},
+    {70, "Ytterbium", "Yb", "Lanthanide", Color(0,200,150)},
+    {71, "Lutetium", "Lu", "Lanthanide", Color(0,200,150)},
+    {72, "Hafnium", "Hf", "Transition", Color::Cyan},
+    {73, "Tantalum", "Ta", "Transition", Color::Cyan},
+    {74, "Tungsten", "W", "Transition", Color::Cyan},
+    {75, "Rhenium", "Re", "Transition", Color::Cyan},
+    {76, "Osmium", "Os", "Transition", Color::Cyan},
+    {77, "Iridium", "Ir", "Transition", Color::Cyan},
+    {78, "Platinum", "Pt", "Transition", Color::Cyan},
+    {79, "Gold", "Au", "Transition", Color(255,215,0)},
+    {80, "Mercury", "Hg", "Transition", Color::Cyan},
+    {81, "Thallium", "Tl", "Other", Color(71,74,81)},
+    {82, "Lead", "Pb", "Other", Color(71,74,81)},
+    {83, "Bismuth", "Bi", "Other", Color(71,74,81)},
+    {84, "Polonium", "Po", "Metalloid", Color(112,128,144)},
+    {85, "Astatine", "At", "Halogen", Color::Green},
+    {86, "Radon", "Rn", "Noble-Gas", Color::Magenta},
+    {87, "Francium", "Fr", "Alkali", Color::Yellow},
+    {88, "Radium", "Ra", "Alkaline", Color(255,165,0)},
+    {89, "Actinium", "Ac", "Actinide", Color(0,255,0)},
+    {90, "Thorium", "Th", "Actinide", Color(0,255,0)},
+    {91, "Protactinium", "Pa", "Actinide", Color(0,255,0)},
+    {92, "Uranium", "U", "Actinide", Color(0,255,0)},
+    {93, "Neptunium", "Np", "Actinide", Color(0,255,0)},
+    {94, "Plutonium", "Pu", "Actinide", Color(0,255,0)},
+    {95, "Americium", "Am", "Actinide", Color(0,255,0)},
+    {96, "Curium", "Cm", "Actinide", Color(0,255,0)},
+    {97, "Berkelium", "Bk", "Actinide", Color(0,255,0)},
+    {98, "Californium", "Cf", "Actinide", Color(0,255,0)},
+    {99, "Einsteinium", "Es", "Actinide", Color(0,255,0)},
+    {100, "Fermium", "Fm", "Actinide", Color(0,255,0)},
+    {101, "Mendelevium", "Md", "Actinide", Color(0,255,0)},
+    {102, "Nobelium", "No", "Actinide", Color(0,255,0)},
+    {103, "Lawrencium", "Lr", "Actinide", Color(0,255,0)},
+    {104, "Rutherfordium", "Rf", "Transition", Color::Cyan},
+    {105, "Dubnium", "Db", "Transition", Color::Cyan},
+    {106, "Seaborgium", "Sg", "Transition", Color::Cyan},
+    {107, "Bohrium", "Bh", "Transition", Color::Cyan},
+    {108, "Hassium", "Hs", "Transition", Color::Cyan},
+    {109, "Meitnerium", "Mt", "Transition", Color::Cyan},
+    {110, "Darmstadtium", "Ds", "Transition", Color::Cyan},
+    {111, "Roentgenium", "Rg", "Transition", Color::Cyan},
+    {112, "Copernicium", "Cn", "Transition", Color::Cyan},
+    {113, "Nihonium", "Nh", "Other", Color(71,74,81)},
+    {114, "Flerovium", "Fl", "Other", Color(71,74,81)},
+    {115, "Moscovium", "Mc", "Other", Color(71,74,81)},
+    {116, "Livermorium", "Lv", "Other", Color(71,74,81)},
+    {117, "Tennessine", "Ts", "Halogen", Color::Green},
+    {118, "Oganesson", "Og", "Noble-Gas", Color::Magenta}
 };
 //Bread and Butter
 class Atom{
@@ -69,6 +144,16 @@ class Atom{
     int electrons;
     Vector2f center;
 
+    static Font& getFont(){
+        static Font font;
+        static bool loaded = false;
+        if(!loaded){
+            if(!font.openFromFile("src/pfont.ttf")){
+            }
+            loaded = true;
+        }
+        return font;
+    }
     CircleShape nucleus;
     CircleShape orbit;
     CircleShape stabilityRing;
@@ -99,7 +184,6 @@ class Atom{
     vector<CircleShape> electron;
     float rotationSpeed = 1.2;
 
-public:
     bool isStable(){
         int N = neutrons;
         int P = protons;
@@ -133,45 +217,26 @@ public:
         }
     }
     }
-    bool checkDiscovery(){
-        ElementData data = getElementByProtons(protons);
-        if(data.proton == 0){
-            return false;
-        } 
-        if(!isStable()){
-            return false;
-        }
-        int charge = protons - electrons;
-        if(abs(charge) > 2){
-            return false;
-        }
-        return true;
-    }
 
-        //Helper function to get element data by proton number
-        static ElementData getElementByProtons(int protonNumber) {
-            for (const auto& elem : PeriodicTable) {
-                if (elem.proton == protonNumber) {
-                    return elem;
-                }
+    //Helper function to get element data by proton number
+    static ElementData getElementByProtons(int protonNumber) {
+        for (const auto& elem : PeriodicTable) {
+            if (elem.proton == protonNumber) {
+                return elem;
             }
-            return PeriodicTable[0];
         }
+        return PeriodicTable[0];
+    }
 
     void refresh() {
     ElementData data = getElementByProtons(protons);
+
     int massNumber = protons + neutrons;
 
-    if (discoveredElements.count(protons)) {
-        nameLabel.setString(
-            data.name + "-" + std::to_string(massNumber) +
-            " (" + data.symbol + ")"
-        );
-    } else {
-        nameLabel.setString("Unknown-" + std::to_string(massNumber));
-    }
-
-    
+    nameLabel.setString(
+        data.name + "-" + std::to_string(massNumber) +
+        " (" + data.symbol + ")"
+    );
 
     int level = instabilityLevel();
     if(level == 0){
@@ -214,19 +279,8 @@ public:
         bounds.position.x + bounds.size.x / 2.0f,
         bounds.position.y + bounds.size.y / 2.0f
     });
-    
 }
-
-    static Font& getFont(){
-        static Font font;
-        static bool loaded = false;
-        if(!loaded){
-            if(!font.openFromFile("src/pfont.ttf")){
-            }
-            loaded = true;
-        }
-        return font;
-    }
+public:
     Atom(int p, int n, int e, Vector2f ctr)
         : protons(p), neutrons(n), electrons(e), center(ctr),nameLabel(getFont())
     {
@@ -277,30 +331,6 @@ public:
             }
         }
     }
-    bool tryUnlock(){
-        if(!isStable()){
-            return false;
-        }
-        ElementData data = getElementByProtons(protons);
-        if(data.proton == 0){
-            return false;
-        }
-        int charge = protons - electrons;
-        if(abs(charge) > 2){
-            return false;
-        }
-        if(discoveredElements.count(protons)){
-            return false;
-        }
-
-        discoveredElements.insert(protons);
-        
-        return true;
-    }
-    int getProtonCount() const{
-        return protons;
-    }
-    static ElementData getElementbyProtons(int p);
     void updateEjected(float dt){
         for(int i = 0; i < ejected.size();){
             Vector2f repel = computeRepulsion(ejected[i].eject.getPosition());
@@ -489,26 +519,6 @@ int main() {
         static float totalTime = 0;
         totalTime += dt; 
 
-        for(int i = 0; i < unlockPopups.size(); ) {
-            unlockPopups[i].life -= dt;
-            if(unlockPopups[i].position.x > 550.0){
-                unlockPopups[i].position.x -= 400.0 * dt;
-            }
-            // Update the text position
-            unlockPopups[i].text.setPosition(unlockPopups[i].position);
-
-            float alpha = fmax(0.f, unlockPopups[i].life / 3.f);
-            Color c = unlockPopups[i].text.getFillColor();
-            c.a = static_cast<uint8_t>(255.f * alpha);
-
-            unlockPopups[i].text.setFillColor(c);
-            if(unlockPopups[i].life <= 0){
-                unlockPopups.erase(unlockPopups.begin() + i);
-            } else {
-                ++i;
-            }
-        }
-
         for (int i = 0; i < projectiles.size(); ) {
             if (projectiles[i].getType() == Projectile::ELECTRON) {
             Vector2f pos = projectiles[i].getPosition();
@@ -540,31 +550,8 @@ int main() {
         a1.updateE(totalTime);
         a1.updateEjected(dt);
         window.clear(Color(10, 10, 25));
-        UnlockPopup popup(Atom::getFont());
-        if (a1.tryUnlock()) {
-        ElementData data = Atom::getElementByProtons(a1.getProtonCount());
-
-        UnlockPopup popup(Atom::getFont());
-        popup.text.setCharacterSize(28);
-        popup.text.setFillColor(Color::White);
-        popup.text.setString("Unlocked: " + data.name + " (" + data.symbol + ")");
-        popup.position = Vector2f(820.f, 100.f);
-        popup.life = 3.0f;
-
-        unlockPopups.push_back(popup);
-        }
         a1.draw(window);
-
-        // Draw unlock popups
-        for (auto& popup : unlockPopups) {
-            window.draw(popup.text);
-        }
-
-        // Draw projectiles
-        for (auto& proj : projectiles) {
-            proj.draw(window);
-        }
-
+        for (auto& p : projectiles) p.draw(window);
         window.display();
     }
     return 0;
