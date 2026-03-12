@@ -91,15 +91,36 @@ Neutral (0)	Soft Blue
 
 *SFML 3.0.3
 
-*Font file located at:
-  src/pfont.ttf
+*Font & Audio files located at:
+  src/
 
 
 ***Example Build Command (macOS)[Important]**
 
-  g++ -std=c++17 -I/opt/homebrew/opt/sfml/include src/main.cpp -o bin/main \
-  -L/opt/homebrew/opt/sfml/lib \
-  -lsfml-graphics -lsfml-window -lsfml-system
+  Pre-Requisites: Make sure you have SFML and CMake(optional) installed via brew.
+  
+  To install SFML: brew install sfml
+  
+  To install CMake: brew install cmake sfml
+  
+  To Run: 
+
+  Method 1(make + SFML):
+  
+  Step 1: in the terminal type: make
+  
+  Step 2: in the terminal type: ./bin/main
+
+
+  Method 2(CMake + SFML):
+
+  Step 1: cmake -B Build
+
+  Step 2: cmake --build build
+
+  Step 3: ./build/AtomicSandbox
+
+  Step 3(Only for Windows): build/AtomicSandbox.exe
   
 Adjust include and library paths for your platform.
 
@@ -125,7 +146,7 @@ AtomicSandbox/
 
 |     |---main
 
-|---- makefile
+|---- makefile or CMakeLists.txt (Based on how you want to run)
 
 **Technical Overview:**
 
