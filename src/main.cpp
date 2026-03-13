@@ -8,6 +8,8 @@
 using namespace sf;
 using namespace std;
 
+const float pi = 3.1415926535;
+
 //Data
 struct ElementData{
     int proton;
@@ -189,7 +191,7 @@ public:
         if(P <= 20){
             return abs(N-P) <= 1;
         } else{
-            return N >= P && N <= (int)(1.5 * P);
+            return N >= P * 1.1 && N <= (int)(1.6 * P);
         }
     }
 
@@ -347,7 +349,7 @@ public:
         int inShell = min(remaining, shellConfigs[s].maxCap);
         for(int i = 0; i < inShell ; i++){
                 float speed = rotationSpeed / (s+1);
-                float spacing = i * ((2 * 3.1415926535) / inShell);
+                float spacing = i * ((2 * pi) / inShell);
                 float angle = spacing + (time * speed);
 
                 float x = center.x + shellConfigs[s].radius * cos(angle);
@@ -365,17 +367,13 @@ public:
             }
         }
     }
+
     void updateEjected(float dt){
         for(int i = 0; i < ejected.size();){
             Vector2f repel = computeRepulsion(ejected[i].eject.getPosition());
             ejected[i].velocity += repel * dt;
             ejected[i].eject.move(ejected[i].velocity * dt);
             ejected[i].life -= dt;
-        if(instabilityLevel() == 2){
-            if((float)rand() / RAND_MAX < 0.5 * dt){
-                removeElectron();
-            }
-        }
 
         float alpha = max(0.0f, ejected[i].life);
         Color c = ejected[i].eject.getFillColor();
@@ -388,6 +386,11 @@ public:
             ++i;
         }
         }
+        if(instabilityLevel() == 2){
+            if((float)rand() / RAND_MAX < 0.5 * dt){
+                removeElectron();
+            }
+        }
     }
     void addProton(){
         protons++;
@@ -398,6 +401,14 @@ public:
     }
     void addNeutron(){
         neutrons++;
+        if(protons > 82 && rand()%100 < 5){
+            protons = protons/2;
+            neutrons = neutrons/2;
+
+            for(int i = 0; i < 3; i++){
+                removeElectron();
+            }
+        }
         refresh();
     }
     void addElectron(){
@@ -416,7 +427,7 @@ public:
         ee.eject.setOrigin({3.0, 3.0});
         ee.eject.setFillColor(Color::Red);
         ee.eject.setPosition(center);
-        float angle = static_cast<float>(rand()) / RAND_MAX * 2.0 * 3.1415926535;
+        float angle = static_cast<float>(rand()) / RAND_MAX * 2.0 * pi;
         float speed = 200.0;
         ee.velocity = Vector2f(
             cos(angle) * speed,
@@ -436,14 +447,72 @@ public:
             Vector2f dir = position - center;
 
             float distSq = dir.x * dir.x + dir.y * dir.y;
-            distSq = max(distSq, 100.0f);
-
-            float magForce = electronRepel / distSq;
-
+            const float minDist = 10.0f;
             float length = sqrt(distSq);
+            length = max(length, minDist);
+            distSq = length * length;
+
+            float magForce = electronRepel * chargeStrength / distSq;
+
+            if(length > 0.0001){
             dir = dir / length;
+            }
 
             return dir * magForce;
+    }
+    void nuclearDecay(){
+        protons = max(0, protons);
+        neutrons = max(0, neutrons);
+        electrons = max(0, electrons);
+
+        if(instabilityLevel() != 2){
+            return;
+        }
+        float r = (float)rand()/RAND_MAX;
+        if(r < 0.3 && protons > 2 && neutrons > 2){
+            protons -= 2;
+            neutrons -= 2;
+        }
+        else if(r < 0.6 && neutrons > 0){
+            neutrons--;
+            protons++;
+            removeElectron();
+        }
+        if(neutrons < 0){
+            collapse();
+        }
+        refresh();
+    }
+    void collapse(){
+        for(int i = 0; i < 25; i++){
+            EjectedE spark;
+            spark.eject.setRadius(5.0);
+            spark.eject.setOrigin(center);
+            spark.eject.setFillColor(Color(255, rand()%150,0));
+            spark.eject.setPosition(center);
+
+            float angle = ((float)rand() / RAND_MAX) * 2.0 * pi;
+            float speed = 200.0 + rand() % 200;
+
+            spark.velocity = Vector2f(cos(angle) * speed, sin(angle) * speed);
+            spark.life = 1.5;
+
+            ejected.push_back(spark);
+        }
+
+        protons = 0;
+        neutrons = 0;
+        electrons = 0;
+
+        refresh();
+    }
+    void updateDecay(float dt){
+        if(instabilityLevel() != 2){
+            return;
+        }
+        if(rand() / (float)RAND_MAX < 0.5 * dt){
+            nuclearDecay();
+        }
     }
     void draw(RenderWindow& window) {
         int remaining = electrons;
@@ -468,6 +537,9 @@ public:
     }
         for (auto& e : electron){
             window.draw(e);
+        }
+        for(auto& p : ejected){
+            window.draw(p.eject);
         }
         for(auto& ee : ejected){
             window.draw(ee.eject);
@@ -504,7 +576,10 @@ public:
 
         Vector2f dir = end - start;
         float length = sqrt(dir.x * dir.x + dir.y * dir.y);
-        velocity = Vector2f((dir.x / length) * 400.0f, (dir.y / length) * 400.0f);
+        if(length > 0.0001f){
+            dir /= length;
+        }
+        velocity = dir * 400.0f;
     }
 
     void update(float dt){
@@ -542,7 +617,7 @@ int main() {
 
     infoText.setFont(Atom::getFont());
     infoText.setCharacterSize(10);
-    infoText.setLineSpacing(2.0);
+    infoText.setLineSpacing(1.6);
     infoText.setFillColor(Color::White);
     infoText.setPosition({570.0, 410.0});
 
@@ -604,8 +679,6 @@ int main() {
         int index = min(a1.protons, (int)PeriodicTable.size() - 1);
         ElementData element = PeriodicTable[index];
 
-        infoText.setString(ss.str());
-
         ss << "Element: " << element.name << "\n";
         ss << "Symbol: " << element.symbol << "\n";
         ss << "Atomic #: " << a1.getProtons() << "\n";
@@ -639,13 +712,15 @@ int main() {
                 if (projectiles[i].getType() == Projectile::PROTON) a1.addProton();
                 if (projectiles[i].getType() == Projectile::NEUTRON) a1.addNeutron();
                 if(projectiles[i].getType() == Projectile::ELECTRON) a1.addElectron();
-                projectiles.erase(projectiles.begin() + i);
+                projectiles[i] = projectiles.back();
+                projectiles.pop_back();
             } else {
                 ++i;
             }
         }
         a1.updateE(totalTime);
         a1.updateEjected(dt);
+        a1.updateDecay(dt);
         window.clear(Color(10, 10, 25));
         a1.draw(window);
         window.draw(infoPanel);
